@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Jungle Socks — Replica</title>
+  <style>
+    :root{--bg:#f7fafc;--card:#fff;--accent:#2b6cb0;--muted:#6b7280}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial; background:var(--bg); color:#111; margin:0;padding:32px}
+    .container{max-width:880px;margin:0 auto}
+    header h1{margin:0 0 8px;font-size:28px}
+    header p{margin:0 0 20px;color:var(--muted)}
+    .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 6px 18px rgba(12,20,30,0.06)}
+    table{width:100%;border-collapse:collapse;margin-bottom:16px}
+    th,td{padding:10px;text-align:left;border-bottom:1px solid #eef2f6}
+    th{font-weight:600;color:var(--muted)}
+    .stock-num{font-weight:700}
+    label{display:block;margin:8px 0 6px;font-size:13px;color:var(--muted)}
+    select,input[type=number]{width:100%;padding:8px;border-radius:8px;border:1px solid #e6edf3}
+    .row{display:flex;gap:12px}
+    .col{flex:1}
+    .actions{display:flex;gap:8px;align-items:center}
+    button{background:var(--accent);color:white;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
+    button:disabled{opacity:0.6;cursor:not-allowed}
+    .cart{margin-top:16px}
+    .cart ul{list-style:none;padding:0;margin:0}
+    .cart li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #f1f5f9}
+    .small{font-size:13px;color:var(--muted)}
+    footer{margin-top:18px;font-size:13px;color:var(--muted)}
+    @media (max-width:600px){.row{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Jungle Socks Shopping Cart</h1>
+      <p>Welcome to Jungle stocks!, Please select the below socks for your order.</p>
+    </header>
+
+    <section class="card">
+      <table aria-describedby="product-list">
+        <thead>
+          <tr><th>Type</th><th>Stock</th><th>Add</th></tr>
+        </thead>
+        <tbody id="product-list">
+          <!-- Products will be rendered by JS -->
+        </tbody>
+      </table>
+
+      <div class="row">
+        <div class="col">
+          <label for="state">State</label>
+          <select id="state" aria-label="Choose state">
+            <option value="">--Select a state--</option>
+          </select>
+        </div>
+        <div class="col actions">
+          <button id="checkout" disabled>Checkout</button>
+          <div class="small" id="cart-count">Cart: 0</div>
+        </div>
+      </div>
+
+      <div class="cart card" style="margin-top:16px">
+        <h3 style="margin-top:0">Your Cart</h3>
+        <ul id="cart-list">
+          <li class="small">(empty)</li>
+        </ul>
+        <div style="margin-top:12px;text-align:right" class="small">Total items: <span id="total-items">0</span></div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="small">This is a replica generated from the provided site.</div>
+    </footer>
+  </div>
+
+  <script>
+    // Data copied from your site
+    const products = [
+      { id: 'lion', name: 'Lion', stock: 20, price: 9.99 },
+      { id: 'tiger', name: 'Tiger', stock: 5, price: 11.99 },
+      { id: 'giraffe', name: 'Giraffe', stock: 10, price: 10.49 }
+    ];
+
+    const states = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
+
+    const productListEl = document.getElementById('product-list');
+    const stateEl = document.getElementById('state');
+    const cartListEl = document.getElementById('cart-list');
+    const cartCountEl = document.getElementById('cart-count');
+    const totalItemsEl = document.getElementById('total-items');
+    const checkoutBtn = document.getElementById('checkout');
+
+    // Simple in-memory cart
+    const cart = {};
+
+    function renderProducts(){
+      productListEl.innerHTML = '';
+      products.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${p.name}</td>
+          <td><span class="stock-num" id="stock-${p.id}">${p.stock}</span></td>
+          <td>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input aria-label="quantity-${p.id}" type="number" min="1" value="1" style="width:80px;padding:6px;border-radius:6px;border:1px solid #e6edf3">
+              <button data-id="${p.id}">Add</button>
+            </div>
+          </td>
+        `;
+
+        const btn = tr.querySelector('button');
+        const qtyInput = tr.querySelector('input');
+        btn.addEventListener('click', ()=>{
+          const qty = Math.max(1, Math.floor(Number(qtyInput.value) || 1));
+          addToCart(p.id, qty);
+        });
+        productListEl.appendChild(tr);
+      });
+    }
+
+    function populateStates(){
+      states.forEach(s => {
+        const opt = document.createElement('option'); opt.value = s; opt.textContent = s;
+        stateEl.appendChild(opt);
+      });
+    }
+
+    function addToCart(id, qty){
+      const prod = products.find(x=>x.id===id);
+      if(!prod) return;
+      const currentInCart = cart[id] ? cart[id].qty : 0;
+      if(currentInCart + qty > prod.stock){
+        alert('Not enough stock available.');
+        return;
+      }
+      cart[id] = { ...prod, qty: (cart[id]?.qty || 0) + qty };
+      renderCart();
+    }
+
+    function renderCart(){
+      const ids = Object.keys(cart);
+      if(ids.length===0){ cartListEl.innerHTML = '<li class="small">(empty)</li>'; cartCountEl.textContent = 'Cart: 0'; totalItemsEl.textContent='0'; checkoutBtn.disabled=true; return; }
+      cartListEl.innerHTML='';
+      let totalQty = 0;
+      ids.forEach(id => {
+        const it = cart[id];
+        totalQty += it.qty;
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${it.name} x ${it.qty}</span><span class="small">$${(it.price*it.qty).toFixed(2)}</span>`;
+        cartListEl.appendChild(li);
+      });
+      cartCountEl.textContent = `Cart: ${ids.length}`;
+      totalItemsEl.textContent = String(totalQty);
+      checkoutBtn.disabled = false;
+    }
+
+    checkoutBtn.addEventListener('click', ()=>{
+      if(Object.keys(cart).length===0){ alert('Cart is empty'); return; }
+      const state = stateEl.value;
+      if(!state){ alert('Please select a state for shipping.'); return; }
+      let summary = 'Order summary:\n\n';
+      let total = 0;
+      for(const id of Object.keys(cart)){
+        const it = cart[id];
+        summary += `${it.name} x ${it.qty} — $${(it.price*it.qty).toFixed(2)}\n`;
+        total += it.price*it.qty;
+      }
+      summary += `\nShipping to: ${state} \nTotal: $${total.toFixed(2)}`;
+      alert(summary);
+    });
+
+    // init
+    populateStates(); renderProducts();
+  </script>
+</body>
+</html>
