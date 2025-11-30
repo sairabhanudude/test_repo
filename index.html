@@ -1,281 +1,133 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Jungle Socks — Replica (buggy)</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ElectroMart</title>
   <style>
-    :root{--bg:#f7fafc;--card:#fff;--accent:#2b6cb0;--muted:#6b7280}
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial; background:var(--bg); color:#111; margin:0;padding:32px}
-    .container{max-width:880px;margin:0 auto}
-    header h1{margin:0 0 8px;font-size:28px}
-    header p{margin:0 0 20px;color:var(--muted)}
-    .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 6px 18px rgba(12,20,30,0.06)}
-    table{width:100%;border-collapse:collapse;margin-bottom:16px}
-    th,td{padding:10px;text-align:left;border-bottom:1px solid #eef2f6}
-    th{font-weight:600;color:var(--muted)}
-    .stock-num{font-weight:700}
-    label{display:block;margin:8px 0 6px;font-size:13px;color:var(--muted)}
-    select,input[type=number]{width:100%;padding:8px;border-radius:8px;border:1px solid #e6edf3}
-    .row{display:flex;gap:12px}
-    .col{flex:1}
-    .actions{display:flex;gap:8px;align-items:center}
-    button{background:var(--accent);color:white;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
-    button:disabled{opacity:0.6;cursor:not-allowed}
-    .cart{margin-top:16px}
-    .cart ul{list-style:none;padding:0;margin:0}
-    .cart li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #f1f5f9}
-    .small{font-size:13px;color:var(--muted)}
-    footer{margin-top:18px;font-size:13px;color:var(--muted)}
-    @media (max-width:600px){.row{flex-direction:column}}
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+    #resetFlash { position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                  border: 5px solid transparent; pointer-events: none; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Jungle Socks Shopping Cart</h1>
-      <p>Welcome to Jungle stocks!, Please select the below socks for your order.</p>
-    </header>
+  <h1>ElectroMart</h1>
+  <p>Choose products and quantities below.</p>
 
-    <section class="card">
-      <table aria-describedby="product-list">
-        <thead>
-          <tr><th>Type</th><th>Stock</th><th>Add</th></tr>
-        </thead>
-        <tbody id="product-list">
-          <!-- Products will be rendered by JS -->
-        </tbody>
-      </table>
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Price</th>
+        <th>In Stock</th>
+        <th>Quantity</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Smartphone</td>
+        <td>$699</td>
+        <td id="stock-phone">15</td>
+        <td><input id="qty-phone" type="number" min="0" value="0"></td>
+      </tr>
+      <tr>
+        <td>Laptop</td>
+        <td>$1199</td>
+        <td id="stock-laptop">8</td>
+        <td><input id="qty-laptop" type="number" min="0" value="0"></td>
+      </tr>
+      <tr>
+        <td>Headphones</td>
+        <td>$199</td>
+        <td id="stock-headphones">25</td>
+        <td><input id="qty-headphones" type="number" min="0" value="0"></td>
+      </tr>
+      <tr>
+        <td>Tablet</td>
+        <td>$499</td>
+        <td id="stock-tablet">12</td>
+        <td><input id="qty-tablet" type="number" min="0" value="0"></td>
+      </tr>
+    </tbody>
+  </table>
 
-      <div class="row">
-        <div class="col">
-          <label for="state">State</label>
-          <select id="state" aria-label="Choose state">
-            <option value="">--Select a state--</option>
-          </select>
-        </div>
-        <div class="col actions">
-          <button id="checkout" disabled>Checkout</button>
-          <div class="small" id="cart-count">Cart: 0</div>
-        </div>
-      </div>
+  <button id="checkoutBtn">Checkout</button>
 
-      <div class="cart card" style="margin-top:16px">
-        <h3 style="margin-top:0">Your Cart</h3>
-        <ul id="cart-list">
-          <li class="small">(empty)</li>
-        </ul>
-        <div style="margin-top:12px;text-align:right" class="small">Total items: <span id="total-items">0</span></div>
-      </div>
-    </section>
+  <h2>Total: $<span id="total">0</span></h2>
 
-    <footer>
-      <div class="small">This is a replica generated from the provided site.</div>
-    </footer>
-  </div>
+  <div id="resetFlash"></div>
 
   <script>
-    // === Data (same items as before) ===
-    const products = [
-      { id: 'lion', name: 'Lion', stock: 20, price: 9.99 },
-      { id: 'tiger', name: 'Tiger', stock: 5, price: 11.99 },
-      { id: 'giraffe', name: 'Giraffe', stock: 10, price: 10.49 }
-    ];
+    // Default stocks for admin reset
+    const defaultStock = {
+      phone: 15,
+      laptop: 8,
+      headphones: 25,
+      tablet: 12
+    };
 
-    const states = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
+    // Restore from localStorage
+    function loadState() {
+      const saved = JSON.parse(localStorage.getItem("estore"));
+      if (saved) {
+        document.getElementById("stock-phone").textContent = saved.phone;
+        document.getElementById("stock-laptop").textContent = saved.laptop;
+        document.getElementById("stock-headphones").textContent = saved.headphones;
+        document.getElementById("stock-tablet").textContent = saved.tablet;
+      }
+    }
+    loadState();
 
-    const productListEl = document.getElementById('product-list');
-    const stateEl = document.getElementById('state');
-    const cartListEl = document.getElementById('cart-list');
-    const cartCountEl = document.getElementById('cart-count');
-    const totalItemsEl = document.getElementById('total-items');
-    const checkoutBtn = document.getElementById('checkout');
-
-    // Simple in-memory cart
-    const cart = {};
-
-    // --- Helper: formatting price ---
-    function fmt(v){ return '$' + Number(v).toFixed(2); }
-
-    // === Render products into table ===
-    function renderProducts(){
-      productListEl.innerHTML = '';
-      products.forEach(p => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${p.name}</td>
-          <td><span class="stock-num" id="stock-${p.id}">${p.stock}</span></td>
-          <td>
-            <div style="display:flex;gap:8px;align-items:center">
-              <!-- BUG: step allows decimal quantities; negative allowed in some browsers -->
-              <input aria-label="quantity-${p.id}" type="number" min="1" step="0.1" value="1" style="width:80px;padding:6px;border-radius:6px;border:1px solid #e6edf3">
-              <button data-id="${p.id}">Add</button>
-            </div>
-          </td>
-        `;
-
-        const btn = tr.querySelector('button');
-        const qtyInput = tr.querySelector('input');
-        btn.addEventListener('click', ()=>{
-          // BUG: not flooring and allows decimals and negative numbers through
-          const qty = Number(qtyInput.value) || 1;
-          addToCart(p.id, qty);
-        });
-        productListEl.appendChild(tr);
-      });
+    function saveState() {
+      const state = {
+        phone: parseInt(document.getElementById("stock-phone").textContent),
+        laptop: parseInt(document.getElementById("stock-laptop").textContent),
+        headphones: parseInt(document.getElementById("stock-headphones").textContent),
+        tablet: parseInt(document.getElementById("stock-tablet").textContent)
+      };
+      localStorage.setItem("estore", JSON.stringify(state));
     }
 
-    // Populate states
-    function populateStates(){
-      states.forEach(s => {
-        const opt = document.createElement('option'); opt.value = s; opt.textContent = s;
-        stateEl.appendChild(opt);
-      });
-    }
+    document.getElementById("checkoutBtn").addEventListener("click", () => {
+      const phone = parseInt(document.getElementById("qty-phone").value);
+      const laptop = parseInt(document.getElementById("qty-laptop").value);
+      const headphones = parseInt(document.getElementById("qty-headphones").value);
+      const tablet = parseInt(document.getElementById("qty-tablet").value);
 
-    // Add to cart logic (contains multiple intentional bugs)
-    function addToCart(id, qty){
-      const prod = products.find(x=>x.id===id);
-      if(!prod) return;
+      // BUGS intentionally included (not listed here for brevity)
 
-      // MEDIUM BUG: One product ('giraffe') cannot be added if qty >= 2
-      if(id === 'giraffe' && qty >= 2){
-        alert('This product has a purchasing restriction. Please add 1 at a time.');
-        return;
-      }
+      let total = phone * 699 + laptop * 1199 + headphones * 199 + tablet * 499;
+      document.getElementById("total").textContent = total;
 
-      const currentInCart = cart[id] ? cart[id].qty : 0;
+      // Reduce stock
+      document.getElementById("stock-phone").textContent -= phone;
+      document.getElementById("stock-laptop").textContent -= laptop;
+      document.getElementById("stock-headphones").textContent -= headphones;
+      document.getElementById("stock-tablet").textContent -= tablet;
 
-      // EASY BUG: stock check allows oversell because qty might be decimal/negative; but still block if grossly over
-      if(currentInCart + qty > prod.stock + 0.0001){
-        alert('Not enough stock available.');
-        return;
-      }
-
-      // Add to cart
-      cart[id] = { ...prod, qty: (cart[id]?.qty || 0) + qty };
-
-      // EASY BUG: Stock decreases incorrectly (decremented twice)
-      prod.stock -= qty;
-      prod.stock -= qty; // <-- intentional double-decrement
-
-      // EASY BUG (UI state): accidentally reset the state dropdown to a default (California) after each add
-      // This will surprise people who already selected something
-      stateEl.value = 'California';
-
-      // Save to localStorage but under a backup key
-      // MEDIUM BUG: saving under backup key so load logic below will pick up stale data
-      try {
-        localStorage.setItem('junglesocks_cart_backup', JSON.stringify(cart));
-      } catch(e){ /* ignore */ }
-
-      renderCart();
-      renderProducts();
-    }
-
-    // Render cart
-    function renderCart(){
-      const ids = Object.keys(cart);
-      if(ids.length===0){ cartListEl.innerHTML = '<li class="small">(empty)</li>'; cartCountEl.textContent = 'Cart: 0'; totalItemsEl.textContent='0'; checkoutBtn.disabled=true; return; }
-      cartListEl.innerHTML='';
-      let totalQty = 0;
-      ids.forEach(id => {
-        const it = cart[id];
-        totalQty += it.qty;
-        // EASY BUG: line total multiplies quantity twice (overcharges)
-        const lineTotal = it.price * it.qty * it.qty; // <-- intentional bug
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${it.name} x ${it.qty}</span><span class="small">${fmt(lineTotal)}</span>`;
-        cartListEl.appendChild(li);
-      });
-      // EASY BUG: cart counter intentionally off-by-one
-      cartCountEl.textContent = `Cart: ${ids.length + 1}`; // <-- intentional bug
-      totalItemsEl.textContent = String(totalQty);
-      checkoutBtn.disabled = false;
-    }
-
-    // Load persisted cart (contains a medium-severity bug: loads wrong default backup on refresh)
-    function loadPersistedCart(){
-      try {
-        // MEDIUM BUG: reads from a backup key that might contain stale/wrong values.
-        const saved = localStorage.getItem('junglesocks_cart_backup');
-        if(saved){
-          const parsed = JSON.parse(saved);
-          // Intentionally set a bogus value if there's any saved object to make refresh restore non-obvious wrong cart
-          // (This simulates a restore bug where stale backup overwrites the user's last cart)
-          if(parsed && Object.keys(parsed).length > 0){
-            // Set cart to a bogus non-empty state so refresh shows unexpected values
-            cart['lion'] = { ...products.find(x=>x.id==='lion'), qty: 2 };
-            cart['tiger'] = { ...products.find(x=>x.id==='tiger'), qty: 1 };
-          }
-        }
-      } catch(e){}
-    }
-
-    // Checkout logic (contains bugs)
-    checkoutBtn.addEventListener('click', ()=>{
-      if(Object.keys(cart).length===0){ alert('Cart is empty'); return; }
-      const state = stateEl.value;
-      if(!state){ alert('Please select a state for shipping.'); return; }
-
-      // Calculate subtotal
-      let ids = Object.keys(cart);
-      let subtotal = 0;
-      ids.forEach(id => {
-        const it = cart[id];
-        subtotal += it.price * it.qty;
-      });
-
-      // HARD BUG (hidden): when both Lion and Tiger are in cart, rounding is applied per-item with toFixed(1)
-      // This introduces a small precision error in total only for that combo.
-      if(cart['lion'] && cart['tiger']){
-        let temp = 0;
-        ids.forEach(id => {
-          const it = cart[id];
-          // Rounds each line to 1 decimal THEN sums — causes cents loss
-          temp += parseFloat((it.price * it.qty).toFixed(1));
-        });
-        subtotal = temp;
-      }
-
-      // TAX logic (MEDIUM BUG): tax rate logic is overly simplistic and wrong for certain states.
-      // Instead of a correct mapping, we apply a rule: states starting with 'C' get 10% (incorrect)
-      let taxRate = 0.05;
-      if(state.startsWith('C')) taxRate = 0.10; // incorrect for many 'C' states
-
-      const tax = subtotal * taxRate;
-      let total = subtotal + tax;
-
-      // HARD BUG: if total > $50 we simulate a failure path (doesn't crash page, but fails checkout)
-      if(total > 50){
-        // attempt to call a missing function (throws) but we catch it below to avoid breaking the site
-        try {
-          missingCheckoutStep(total); // ReferenceError -> caught
-        } catch(e){
-          alert('Checkout failed due to an unexpected processing error. Please contact support.');
-          return;
-        }
-      }
-
-      // Show summary
-      let summary = 'Order summary:\n\n';
-      let totalShown = 0;
-      for(const id of ids){
-        const it = cart[id];
-        const line = `${it.name} x ${it.qty} — ${fmt(it.price * it.qty)}`;
-        summary += line + '\n';
-        totalShown += it.price * it.qty;
-      }
-      summary += `\nShipping to: ${state}\nTax: ${fmt(tax)}\nTotal: ${fmt(totalShown + tax)}`;
-
-      alert(summary);
+      saveState();
     });
 
-    // Init
-    populateStates();
-    loadPersistedCart();
-    renderProducts();
-    renderCart();
+    // Hidden Admin Reset CTRL + ALT + R
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.altKey && e.key === "r") {
+        localStorage.removeItem("estore");
+
+        document.getElementById("stock-phone").textContent = defaultStock.phone;
+        document.getElementById("stock-laptop").textContent = defaultStock.laptop;
+        document.getElementById("stock-headphones").textContent = defaultStock.headphones;
+        document.getElementById("stock-tablet").textContent = defaultStock.tablet;
+
+        const flash = document.getElementById("resetFlash");
+        flash.style.borderColor = "lime";
+        setTimeout(() => flash.style.borderColor = "transparent", 300);
+
+        saveState();
+      }
+    });
   </script>
 </body>
 </html>
