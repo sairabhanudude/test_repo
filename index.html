@@ -1,133 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Electro Mart</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GlitchShop</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    h1 { text-align: center; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-    #resetFlash { position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                  border: 5px solid transparent; pointer-events: none; }
+    body { font-family: Arial; background:#f9fafb; padding:20px; }
+    h1 { color:#111827; }
+    .card { background:white; padding:20px; border-radius:10px; width:420px; }
+    select, input { width:100%; padding:8px; margin-top:5px; }
+    button { margin-top:10px; padding:10px; cursor:pointer; }
   </style>
 </head>
 <body>
-  <h1>ElectroMart</h1>
-  <p>Choose products and quantities below.</p>
+  <h1>GlitchShop</h1>
+  <p>Find and fix the bugs.</p>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Product</th>
-        <th>Price</th>
-        <th>In Stock</th>
-        <th>Quantity</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Smartphone</td>
-        <td>$699</td>
-        <td id="stock-phone">15</td>
-        <td><input id="qty-phone" type="number" min="0" value="0"></td>
-      </tr>
-      <tr>
-        <td>Laptop</td>
-        <td>$1199</td>
-        <td id="stock-laptop">8</td>
-        <td><input id="qty-laptop" type="number" min="0" value="0"></td>
-      </tr>
-      <tr>
-        <td>Headphones</td>
-        <td>$199</td>
-        <td id="stock-headphones">25</td>
-        <td><input id="qty-headphones" type="number" min="0" value="0"></td>
-      </tr>
-      <tr>
-        <td>Tablet</td>
-        <td>$499</td>
-        <td id="stock-tablet">12</td>
-        <td><input id="qty-tablet" type="number" min="0" value="0"></td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="card">
+    <label>Product</label>
+    <select id="product">
+      <option value="chair">Chair - $50</option>
+      <option value="desk">Desk - $150</option>
+      <option value="lamp">Lamp - $30</option>
+    </select>
 
-  <button id="checkoutBtn">Checkout</button>
+    <br><br>
+    <label>Quantity</label>
+    <input id="qty" type="number" value="1">
 
-  <h2>Total: $<span id="total">0</span></h2>
+    <br>
+    <button onclick="buy()">Buy Now</button>
 
-  <div id="resetFlash"></div>
+    <h2 id="total">Total: $0</h2>
+    <p id="msg"></p>
+  </div>
 
   <script>
-    // Default stocks for admin reset
-    const defaultStock = {
-      phone: 15,
-      laptop: 8,
-      headphones: 25,
-      tablet: 12
+    const prices = {
+      chair: 50,
+      desk: 150,
+      lamp: 30
     };
 
-    // Restore from localStorage
-    function loadState() {
-      const saved = JSON.parse(localStorage.getItem("estore"));
-      if (saved) {
-        document.getElementById("stock-phone").textContent = saved.phone;
-        document.getElementById("stock-laptop").textContent = saved.laptop;
-        document.getElementById("stock-headphones").textContent = saved.headphones;
-        document.getElementById("stock-tablet").textContent = saved.tablet;
+    function buy() {
+      let p = document.getElementById('product').value;
+      let q = document.getElementById('qty').value;
+
+      // BUG 1: Desk price wrong occasionally
+      let price = prices[p];
+      if (p === 'desk' && Math.random() > 0.8) price = 100;
+
+      // BUG 2: String concatenation instead of multiplication for lamp
+      let total;
+      if (p === 'lamp') {
+        total = price + q;
+      } else {
+        total = price * q;
       }
-    }
-    loadState();
 
-    function saveState() {
-      const state = {
-        phone: parseInt(document.getElementById("stock-phone").textContent),
-        laptop: parseInt(document.getElementById("stock-laptop").textContent),
-        headphones: parseInt(document.getElementById("stock-headphones").textContent),
-        tablet: parseInt(document.getElementById("stock-tablet").textContent)
-      };
-      localStorage.setItem("estore", JSON.stringify(state));
-    }
+      // BUG 3: NaN not handled
+      document.getElementById('total').innerText = "Total: $" + total;
 
-    document.getElementById("checkoutBtn").addEventListener("click", () => {
-      const phone = parseInt(document.getElementById("qty-phone").value);
-      const laptop = parseInt(document.getElementById("qty-laptop").value);
-      const headphones = parseInt(document.getElementById("qty-headphones").value);
-      const tablet = parseInt(document.getElementById("qty-tablet").value);
+      // BUG 4: Success message always shows
+      document.getElementById('msg').innerText = "Purchase completed";
 
-      // BUGS intentionally included (not listed here for brevity)
+      // BUG 5: Message changes randomly later
+      setTimeout(() => {
+        if (Math.random() > 0.7) {
+          document.getElementById('msg').innerText = "Error processing order";
+        }
+      }, 1500);
 
-      let total = phone * 699 + laptop * 1199 + headphones * 199 + tablet * 499;
-      document.getElementById("total").textContent = total;
-
-      // Reduce stock
-      document.getElementById("stock-phone").textContent -= phone;
-      document.getElementById("stock-laptop").textContent -= laptop;
-      document.getElementById("stock-headphones").textContent -= headphones;
-      document.getElementById("stock-tablet").textContent -= tablet;
-
-      saveState();
-    });
-
-    // Hidden Admin Reset CTRL + ALT + R
-    document.addEventListener("keydown", (e) => {
-      if (e.ctrlKey && e.altKey && e.key === "r") {
-        localStorage.removeItem("estore");
-
-        document.getElementById("stock-phone").textContent = defaultStock.phone;
-        document.getElementById("stock-laptop").textContent = defaultStock.laptop;
-        document.getElementById("stock-headphones").textContent = defaultStock.headphones;
-        document.getElementById("stock-tablet").textContent = defaultStock.tablet;
-
-        const flash = document.getElementById("resetFlash");
-        flash.style.borderColor = "lime";
-        setTimeout(() => flash.style.borderColor = "transparent", 300);
-
-        saveState();
+      // BUG 6: Large quantity breaks UI
+      if (q > 1000) {
+        document.getElementById('total').innerText = "Total: $" + (total / 0);
       }
-    });
+
+      // BUG 7: DOM overwrite using innerHTML (unsafe)
+      if (p === 'chair') {
+        document.getElementById('total').innerHTML = "Total: <b>$" + total + "</b>";
+      }
+
+      // BUG 8: Hidden logic bug
+      if (q == "2") {
+        document.getElementById('msg').innerText = "Special discount applied";
+      }
+
+      // BUG 9: Floating precision issue
+      if (p === 'lamp') {
+        document.getElementById('total').innerText = "Total: $" + (0.1 + 0.2) * q;
+      }
+
+      // BUG 10: Inconsistent state when switching products quickly
+      window.lastProduct = p;
+    }
   </script>
 </body>
 </html>
