@@ -71,28 +71,30 @@
         }
       }, 1500);
 
-      // BUG 6: Large quantity breaks UI
-      if (q > 1000) {
-        document.getElementById('total').innerText = "Total: $" + (total / 0);
+      // NEW BUG 6: Quantity treated as string in comparison
+      if (q > "10") {
+        document.getElementById('msg').innerText = "Bulk order detected";
       }
 
-      // BUG 7: DOM overwrite using innerHTML (unsafe)
-      if (p === 'chair') {
-        document.getElementById('total').innerHTML = "Total: <b>$" + total + "</b>";
+      // NEW BUG 7: Switching product doesn't reset previous total logic
+      if (window.prevProduct && window.prevProduct !== p) {
+        total = total + 5; // random extra charge
+        document.getElementById('total').innerText = "Total: $" + total;
       }
 
-      // BUG 8: Hidden logic bug
-      if (q == "2") {
-        document.getElementById('msg').innerText = "Special discount applied";
+      // NEW BUG 8: Incorrect discount logic
+      if (p === 'chair' && q >= 3) {
+        total = total - 100; // way too large discount
+        document.getElementById('total').innerText = "Total: $" + total;
       }
 
-      // BUG 9: Floating precision issue
-      if (p === 'lamp') {
-        document.getElementById('total').innerText = "Total: $" + (0.1 + 0.2) * q;
+      // NEW BUG 9: Quantity input mutated unexpectedly
+      if (p === 'desk') {
+        document.getElementById('qty').value = q * 2;
       }
 
-      // BUG 10: Inconsistent state when switching products quickly
-      window.lastProduct = p;
+      // BUG 10: Hidden state bug
+      window.prevProduct = p;
     }
   </script>
 </body>
